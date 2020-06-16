@@ -12,45 +12,45 @@
   <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/105/three.min.js"></script> -->
   <script type="text/javascript" src="js/three.js"></script>
   <script>
-    // ページの読み込みを待つ
     window.addEventListener('load', init);
 
     function init() {
-
-      // サイズを指定
-      const width = 960;
+      // set Size
+      const width  = 960;
       const height = 540;
 
-      // レンダラーを作成
+      // create Renderer
       const renderer = new THREE.WebGLRenderer({
-        canvas: document.querySelector('#myCanvas')
+        canvas: document.querySelector('#myCanvas') // * not semicoron
       });
       renderer.setPixelRatio(window.devicePixelRatio);
       renderer.setSize(width, height);
 
-      // シーンを作成
+      // create scene
       const scene = new THREE.Scene();
 
-      // カメラを作成
+      // create camera
       const camera = new THREE.PerspectiveCamera(45, width / height);
       camera.position.set(0, 0, +1000);
 
-      // 箱を作成
+      // create Box
       const geometry = new THREE.BoxGeometry(400, 400, 400);
       const material = new THREE.MeshNormalMaterial();
       const box = new THREE.Mesh(geometry, material);
       scene.add(box);
 
+      // Rendering
+      // renderer.render(scene, camera);
       tick();
 
-      // 毎フレーム時に実行されるループイベントです
+      // loop Event
       function tick() {
         box.rotation.y += 0.01;
         renderer.render(scene, camera); // レンダリング
 
         requestAnimationFrame(tick);
       }
-
+            
     }
   </script>
 </head>
