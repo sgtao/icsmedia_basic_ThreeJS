@@ -11,7 +11,153 @@
 ## Three.js入門編
 --------------------
 ### 入門編
+- Three.jsはHTMLの3D技術「WebGL」を扱いやすくしたフレームワークです。
+- 利用に必要なもの
+  1. HTML内に、canvas要素を用意する
+  2. JSライブラリ（`three.js`）を読み込む。
+    - ライブラリの利用はページの読込完了後に発動。→そのため、`window.addEventListener('load', 処理関数);`でloadイベントを監視して実行する
+  3. 3D表示用のJavaScriptを用意
+    - a. HTMLに配置したcanvas要素を指定し、レンダラーを作成します。（THREE.WebGLRendererクラス）
+    - b. シーンを作成する（THREE.Sceneクラス）
+    - c. カメラを作る（THREE.PerspectiveCameraクラス）
+    - d. 立方体を作る（例：new THREE.BoxGeometry(500, 500, 500);）
+    - e. アニメーション（requestAnimationFrame()でループ処理をさせる）
+- サンプルコード：
+```
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/105/three.min.js"></script>
+  <script>
+    // ページの読み込みを待つ
+    window.addEventListener('load', init);
+//
+    function init() {
+      // サイズを指定
+      const width = 960;
+      const height = 540;
+//
+      // レンダラーを作成
+      const renderer = new THREE.WebGLRenderer({
+        canvas: document.querySelector('#myCanvas')
+      });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(width, height);
+//
+      // シーンを作成
+      const scene = new THREE.Scene();
+//
+      // カメラを作成
+      const camera = new THREE.PerspectiveCamera(45, width / height);
+      camera.position.set(0, 0, +1000);
+//
+      // 箱を作成
+      const geometry = new THREE.BoxGeometry(400, 400, 400);
+      const material = new THREE.MeshNormalMaterial();
+      const box = new THREE.Mesh(geometry, material);
+      scene.add(box);
+//
+      // 毎フレーム時に実行されるループイベントです
+      tick();
+      function tick() {
+        box.rotation.y += 0.01;
+        renderer.render(scene, camera); // レンダリング
+        requestAnimationFrame(tick); // for loop
+      }
+    }
+  </script>
+</head>
+<body>
+  <canvas id="myCanvas"></canvas>
+</body>
+</html>
+```
+
 ### マテリアルとライティング
+- マテリアルとは、物体の質感設定のことです。
+  - 「マテリアル」を指定することで、たとえば、着色や画像・陰影の割り当て、ライティングの反射などを適用できます。
+- 利用方法：
+  - Three.jsオブジェクトの作成は、①マテリアルを作成　②ジオメトリを作成　③メッシュを作成という3つの手順を踏むことになります。
+```
+const geometry = new THREE.SphereGeometry(300, 30, 30);  // 球体を作成
+const material = new THREE.MeshStandardMaterial({color: 0xFF0000});  // マテリアルを作成
+const mesh = new THREE.Mesh(geometry, material);  // メッシュを作成（geometryとmaterialを利用）
+scene.add(mesh);  // 3D空間にメッシュを追加
+```
+  - ライティング：画面に照明をあて、３Dの質感を表現する。
+    - 環境光（THREE.AmbientLightクラス）：空間全体を照らす
+    - 平行光源（THREE.DirectionalLightクラス）：ライト位置・方向を設定して光を照らす（下は例）
+```
+const directionalLight = new THREE.DirectionalLight(0xFFFFFF);  // 平行光源
+directionalLight.position.set(1, 1, 1);  // 光源の位置を設定
+scene.add(directionalLight);  // シーンに追加
+```
+  - 画像の利用：立体に画像ファイルを読み込んで貼り付ける事ができる。（THREE.TextureLoaderクラス利用）
+```
+const loader = new THREE.TextureLoader();  // THREE.TextureLoaderクラス生成
+const texture = loader.load('imgs/earthmap1k.jpg');  // 画像を読み込む
+// マテリアルにテクスチャーを設定
+const material = new THREE.MeshStandardMaterial({
+  map: texture
+});
+```
+- サンプルコード：（JavaScriptのみ）
+```
+// ページの読み込みを待つ
+window.addEventListener('load', init);
+// 
+// サイズを指定
+const width = 960;
+const height = 540;
+// 
+function init() {
+  // レンダラーを作成
+  const renderer = new THREE.WebGLRenderer({
+    canvas: document.querySelector('#myCanvas')
+  });
+  renderer.setSize(width, height);
+// 
+  // シーンを作成
+  const scene = new THREE.Scene();
+// 
+  // カメラを作成
+  const camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
+  camera.position.set(0, 0, +1000);
+// 
+      // 球体を作成
+      const geometry = new THREE.SphereGeometry(300, 30, 30);
+      // 画像を読み込む
+      const loader = new THREE.TextureLoader();
+      const texture = loader.load('imgs/earthmap1k.jpg');
+      // マテリアルにテクスチャーを設定
+      const material = new THREE.MeshStandardMaterial({
+        map: texture
+      });
+      // メッシュを作成
+      const mesh = new THREE.Mesh(geometry, material);
+      // 3D空間にメッシュを追加
+      scene.add(mesh);
+// 
+  // 平行光源
+  const directionalLight = new THREE.DirectionalLight(0xFFFFFF);
+  directionalLight.position.set(1, 1, 1);
+  // シーンに追加
+  scene.add(directionalLight);
+// 
+  // 毎フレーム時に実行されるループイベントです
+  tick();
+  function tick() {
+    // メッシュを回転させる
+    mesh.rotation.y += 0.01;
+    // レンダリング
+    renderer.render(scene, camera);
+    // ループ処理
+    requestAnimationFrame(tick);
+  }
+}
+```
+
 ### ジオメトリ
 ### カメラの制御方法（座標制御）
 ### カメラの制御方法（OrbitControls）
